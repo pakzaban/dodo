@@ -12,11 +12,13 @@ class ToDoListViewController: UITableViewController {
 
     var itemArray = ["do first", "do next", "do last"]
     
-    
+    let defaults = UserDefaults.standard //instantiates the userDefault class for storage of persistent values on the local device
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        if let items = defaults.array(forKey: "toDoArray") as? [String]{
+            itemArray = items
+        }
     }
     @IBAction func createToDoPressed(_ sender: UIBarButtonItem) {
         var textField = UITextField() //creatimg a local varaiable witha bigger reach than alertTextField
@@ -27,6 +29,10 @@ class ToDoListViewController: UITableViewController {
             print(textField.text as Any)
             self.itemArray.append(textField.text!)
             self.tableView.reloadData()
+            
+            self.defaults.set(self.itemArray, forKey: "toDoArray")
+            
+            
         }
         
         alert.addAction(action)

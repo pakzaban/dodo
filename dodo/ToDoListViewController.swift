@@ -10,14 +10,38 @@ import UIKit
 
 class ToDoListViewController: UITableViewController {
 
-    let itemArray = ["do first", "do next", "do last"]
+    var itemArray = ["do first", "do next", "do last"]
+    
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
     }
-
+    @IBAction func createToDoPressed(_ sender: UIBarButtonItem) {
+        var textField = UITextField() //creatimg a local varaiable witha bigger reach than alertTextField
+        
+        let alert = UIAlertController(title: "Add a new item to do.", message: "", preferredStyle: .alert)
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            //creates button on po-up alert.  The completion handler describes what that button does.
+            print(textField.text as Any)
+            self.itemArray.append(textField.text!)
+            self.tableView.reloadData()
+        }
+        
+        alert.addAction(action)
+        
+        
+        alert.addTextField { (alertTextField) in
+            //alertTextField is only available inside this closure
+            alertTextField.placeholder = "new item"
+            textField = alertTextField
+        }
+        
+        present(alert, animated: true, completion: nil)
+        
+    }
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         cell.textLabel?.text = itemArray[indexPath.row]

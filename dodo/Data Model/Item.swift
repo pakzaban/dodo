@@ -7,7 +7,8 @@
 //
 
 import Foundation
-class Item{
+// create a class that conforms to the encodable protocol so item instances  and itemArray can be encoded and persistently saved in a plist.  In addition they can be decoded and conform to the Decodable protocol.
+class Item: Codable {
     var title : String = ""
     var done : Bool = false
     

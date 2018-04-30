@@ -11,28 +11,16 @@ import UIKit
 class ToDoListViewController: UITableViewController {
 
     var itemArray = [Item]()
-    let defaults = UserDefaults.standard //instantiates the userDefault class for storage of persistent values on the local device
+    
+    //get the file path to the documents folder and append a newplist to it to hold persistent data
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem = Item()
-        newItem.title = "do first"
-        itemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "do next"
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "do last"
-        itemArray.append(newItem3)
-        
-        //retrive itemArray from persistent local storage
-        if let items = defaults.array(forKey: "toDoArray") as? [Item]{
-            itemArray = items
-        }
+        loadItemsFromPlist()//retrieves saved items from p_list and repopulates itemArray
     }
+    
     @IBAction func createToDoPressed(_ sender: UIBarButtonItem) {
         var textField = UITextField() //creatimg a local varaiable witha bigger reach than alertTextField
         
@@ -44,10 +32,10 @@ class ToDoListViewController: UITableViewController {
             let newItem  = Item()
             newItem.title = textField.text!
             self.itemArray.append(newItem)
-            self.tableView.reloadData()
             
-            self.defaults.set(self.itemArray, forKey: "toDoArray")//stores it locally and persistently
+            self.saveItemsToPlist()
         }
+        
         // 3. must add action (defined above) and the text field to the AlertController
         alert.addAction(action)
         
@@ -56,9 +44,9 @@ class ToDoListViewController: UITableViewController {
             alertTextField.placeholder = "new item"
             textField = alertTextField
         }
+        
         // 4. finally, must present the AlertController
         present(alert, animated: true, completion: nil)
-        
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -79,18 +67,44 @@ class ToDoListViewController: UITableViewController {
         
         return cell
     }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //toggle the fone property of the selected item AND reloadData to make tableView update its data
-        self.itemArray[indexPath.row].done = !self.itemArray[indexPath.row].done
-        self.tableView.reloadData()
+        //toggle the done property of the selected item AND save it to pList
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        saveItemsToPlist()
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-
+    func saveItemsToPlist(){
+        //make a p_list and write the itemArray onto it to create persistent storage
+        let encoder = PropertyListEncoder()
+        
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }
+        catch{
+            print("Error encoding itemArray \(error)")
+        }
+        self.tableView.reloadData()
+    }
+    
+    func loadItemsFromPlist(){
+        
+        do{
+            let data = try Data(contentsOf: dataFilePath!)
+            let decoder = PropertyListDecoder()
+            itemArray = try decoder.decode([Item].self, from: data)
+        }
+        catch{
+            print("decoding failed. \(error)")
+        }
+    
+    }
 }
 
